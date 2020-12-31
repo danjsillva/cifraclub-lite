@@ -2,15 +2,19 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { transpose } from "chord-transposer";
 
-export default function App(props) {
+export default function App() {
+  const [form, setForm] = useState({ url: "" });
+  const [url, setUrl] = useState();
   const [key, setKey] = useState("");
   const [html, setHtml] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const url = params.get("u");
+    setUrl(params.get("u"));
 
-    getContentFromURL(url);
+    if (params.get("u")) {
+      getContentFromURL(params.get("u"));
+    }
   }, []);
 
   async function getContentFromURL(url) {
@@ -71,6 +75,18 @@ export default function App(props) {
     }
   }
 
+  function onChangeInputUrl(event) {
+    setForm({ ...form, url: event.target.value });
+  }
+
+  function onSubmitFormUrl(event) {
+    event.preventDefault();
+
+    if (form.url) {
+      window.location.href = `${window.location.origin}/?u=${form.url}`;
+    }
+  }
+
   function onChangeInputKey(event) {
     setKey(event.target.value);
 
@@ -81,11 +97,20 @@ export default function App(props) {
 
   return (
     <>
-      <button onClick={(e) => changeTone(-1)}>-</button>
-      <input value={key} onChange={onChangeInputKey} />
-      <button onClick={(e) => changeTone(1)}>+</button>
+      <form onSubmit={onSubmitFormUrl}>
+        <input value={form.url} onChange={onChangeInputUrl} />
+        <button>Send</button>
+      </form>
 
-      <div dangerouslySetInnerHTML={{ __html: html }}></div>
+      {url && (
+        <>
+          <button onClick={(e) => changeTone(-1)}>-</button>
+          <input value={key} onChange={onChangeInputKey} />
+          <button onClick={(e) => changeTone(1)}>+</button>
+
+          <div dangerouslySetInnerHTML={{ __html: html }}></div>
+        </>
+      )}
     </>
   );
 }
